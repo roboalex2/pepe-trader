@@ -1,0 +1,20 @@
+
+binance:
+    api-key: "redacted"
+    ed25519-secret-path: "redacted"
+    base-url: "https://testnet.binance.vision" # Prod would be https://api.binance.com
+    base-websocket: "wss://testnet.binance.vision" # Prod would be wss://stream.binance.com:9443
+    base-websocket-api: "wss://testnet.binance.vision/ws-api/v3" # Prod would be wss://ws-api.binance.com:443/ws-api/v3
+
+trade:
+    symbol: "PEPEFDUSD" # pepe coin obviously it's a pepe-trader for duck's sake
+    quote-asset: PEPE
+    quote-asset-scale: 0
+    base-asset: FDUSD
+    base-asset-scale: 8
+    base-asset-quantity-per-trade: 6.00
+
+
+logging.level:
+    org: info
+    at.pepe.trader: info

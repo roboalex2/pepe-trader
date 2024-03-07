@@ -1,0 +1,26 @@
+<configuration>
+    <springProfile name="local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder>
+                <pattern>%d{HH:mm:ss.SSS} [%t] [%X] %-5level %logger{36} - %msg%n</pattern>
+            </encoder>
+        </appender>
+        <!-- <appender name="DISCORD" class="at.pepe.trader.config.logging.DiscordLogAppender"></appender> -->
+        <root level="${logging.level.root}">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+    <springProfile name="!local">
+        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+                <fieldNames>
+                    <message>msg</message>
+                </fieldNames>
+            </encoder>
+        </appender>
+        <!-- <appender name="DISCORD" class="at.pepe.trader.config.logging.DiscordLogAppender"></appender> -->
+        <root level="${logging.level.root}">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+</configuration>
