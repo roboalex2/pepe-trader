@@ -10,6 +10,7 @@ import at.pepe.trader.service.candle.BarSeriesHolderService;
 import com.binance.connector.client.SpotClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -22,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PositionService {
 
     private final TradeConfigProperties tradeConfigProperties;
@@ -32,7 +32,17 @@ public class PositionService {
 
     private Map<Long, Position> positions = new ConcurrentHashMap<>();
 
-    private BigDecimal baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getBaseAssetScale());
+    private BigDecimal baseAssetToNoDeciConv;
+
+    @Autowired
+    public PositionService(TradeConfigProperties tradeConfigProperties, PositionRepositoryImpl positionRepository, OrderService orderService, BarSeriesHolderService barSeriesHolderService) {
+        this.tradeConfigProperties = tradeConfigProperties;
+        this.positionRepository = positionRepository;
+        this.orderService = orderService;
+        this.barSeriesHolderService = barSeriesHolderService;
+        this.baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getBaseAssetScale());
+    }
+
 
     public void openPosition(BigDecimal price) {
         if (Optional.ofNullable(positions.values())
