@@ -32,6 +32,8 @@ public class PositionService {
 
     private Map<Long, Position> positions = new ConcurrentHashMap<>();
 
+    private BigDecimal baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getBaseAssetScale());
+
     public void openPosition(BigDecimal price) {
         if (Optional.ofNullable(positions.values())
                 .orElse(List.of()).stream()
@@ -42,19 +44,31 @@ public class PositionService {
             return;
         }
 
-        orderService.createNewOrder(
-                price,
-                tradeConfigProperties.getBaseAssetQuantityPerTrade().setScale(tradeConfigProperties.getBaseAssetScale(), RoundingMode.DOWN)
-                        .divide(price, RoundingMode.UP).setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.DOWN),
-                "BUY",
-                new Random().nextLong()
-        );
+        if (!hasOpenOrderWaitingInProximity(price)) {
+            orderService.createNewOrder(
+                    price,
+                    tradeConfigProperties.getBaseAssetQuantityPerTrade().setScale(tradeConfigProperties.getBaseAssetScale(), RoundingMode.DOWN)
+                            .divide(price, RoundingMode.UP).setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.DOWN),
+                    "BUY",
+                    new Random().nextLong()
+            );
+        }
+    }
+
+    private boolean hasOpenOrderWaitingInProximity(BigDecimal price) {
+        return positions.values().stream()
+                .filter(pos -> PositionStatus.WAITING_FOR_OPEN.equals(pos.getStatus()))
+                .anyMatch(pos ->
+                        price.multiply(baseAssetToNoDeciConv)
+                                .subtract(
+                                        pos.getOpenAtPrice().multiply(baseAssetToNoDeciConv)
+                                ).doubleValue() <= 3);
     }
 
     @Scheduled(cron = "*/20 * * * * *")
     private void cancelOldPositions() {
         BigDecimal currentPrice = (BigDecimal) barSeriesHolderService.getSecondSeries().getLastBar().getClosePrice().getDelegate();
-        BigDecimal baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getBaseAssetScale());
+
         List<Position> list = positions.values().stream()
                 .filter(pos -> PositionStatus.WAITING_FOR_OPEN.equals(pos.getStatus()))
                 .filter(pos -> pos.getCreatedAt().isBefore(Instant.now().atOffset(ZoneOffset.UTC).minusMinutes(1)))
