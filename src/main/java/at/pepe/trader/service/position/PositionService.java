@@ -51,7 +51,7 @@ public class PositionService {
         );
     }
 
-    @Scheduled(cron = "59 * * * * *")
+    @Scheduled(cron = "*/20 * * * * *")
     private void cancelOldPositions() {
         BigDecimal currentPrice = (BigDecimal) barSeriesHolderService.getSecondSeries().getLastBar().getClosePrice().getDelegate();
         BigDecimal baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getBaseAssetScale());
@@ -63,7 +63,7 @@ public class PositionService {
                                 .subtract(
                                         pos.getOpenAtPrice().multiply(baseAssetToNoDeciConv)
                                 ).doubleValue()
-                ) > 3)
+                ) >= 3)
                 .toList();
         list.forEach(pos ->
                 orderService.cancelOrder(pos.getOrderIdOpen())

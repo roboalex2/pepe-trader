@@ -44,7 +44,7 @@ public class TradingService {
                 .multipliedBy(DecimalNum.valueOf(baseAssetToNoDecimalScale))
                 .getDelegate();
 
-        if (deviation.doubleValue() < 4 && !currentPrice.equals(lastActionPrice) &&
+        if (deviation.doubleValue() < 10 && !currentPrice.equals(lastActionPrice) &&
                 upperIndicator(minutes).getValue(minutes.getEndIndex()).isGreaterThan(DecimalNum.valueOf(currentPrice)) &&
                 lowerIndicator(minutes).getValue(minutes.getEndIndex()).isLessThan(DecimalNum.valueOf(currentPrice)) &&
                 balanceHolderService.getAvailableBaseAsset().doubleValue() >= tradeConfigProperties.getBaseAssetQuantityPerTrade().doubleValue()
