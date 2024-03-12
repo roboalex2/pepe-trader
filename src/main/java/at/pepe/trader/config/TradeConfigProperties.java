@@ -15,9 +15,11 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class TradeConfigProperties {
     private String symbol;
-    private String quoteAsset;
-    private int quoteAssetScale;
     private String baseAsset;
     private int baseAssetScale;
-    private BigDecimal baseAssetQuantityPerTrade;
+    private String quoteAsset;
+    private int quoteAssetScale;
+    private BigDecimal quoteAssetQuantityPerTrade;
+    private int maxStdDivergencePoints;
+    private int gapSizePoints;
 }

@@ -10,17 +10,15 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.ta4j.core.BarSeries;
 import org.ta4j.core.indicators.EMAIndicator;
-import org.ta4j.core.indicators.SMAIndicator;
-import org.ta4j.core.indicators.bollinger.BollingerBandWidthIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsMiddleIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
 import org.ta4j.core.num.DecimalNum;
-import org.ta4j.core.num.Num;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 
 @Slf4j
@@ -39,20 +37,26 @@ public class TradingService {
         BarSeries minutes = barSeriesHolderService.getMinuteSeries();
         BigDecimal currentPrice = ((DecimalNum) minutes.getLastBar().getClosePrice()).getDelegate();
 
-        BigDecimal baseAssetToNoDecimalScale = new BigDecimal(10).pow(tradeConfigProperties.getBaseAssetScale());
+        BigDecimal quoteAssetToScale = new BigDecimal(10).pow(tradeConfigProperties.getQuoteAssetScale());
         BigDecimal deviation = (BigDecimal) stdDeviationIndicator(minutes).getValue(minutes.getEndIndex())
-                .multipliedBy(DecimalNum.valueOf(baseAssetToNoDecimalScale))
+                .multipliedBy(DecimalNum.valueOf(quoteAssetToScale))
                 .getDelegate();
 
-        if (deviation.doubleValue() < 10 && !currentPrice.equals(lastActionPrice) &&
+        if (!currentPrice.equals(lastActionPrice) && deviation.doubleValue() <= tradeConfigProperties.getMaxStdDivergencePoints() &&
                 upperIndicator(minutes).getValue(minutes.getEndIndex()).isGreaterThan(DecimalNum.valueOf(currentPrice)) &&
                 lowerIndicator(minutes).getValue(minutes.getEndIndex()).isLessThan(DecimalNum.valueOf(currentPrice)) &&
-                balanceHolderService.getAvailableBaseAsset().doubleValue() >= tradeConfigProperties.getBaseAssetQuantityPerTrade().doubleValue()
+                balanceHolderService.getAvailableQuoteAsset().doubleValue() >= tradeConfigProperties.getQuoteAssetQuantityPerTrade().doubleValue()
         ) {
             lastActionPrice = currentPrice;
 
-            positionService.openPosition(currentPrice.subtract(new BigDecimal(2).setScale(tradeConfigProperties.getBaseAssetScale(), RoundingMode.DOWN)
-                    .divide(baseAssetToNoDecimalScale, RoundingMode.HALF_UP)));
+            positionService.openPosition(
+                    currentPrice.subtract(
+                            new BigDecimal(tradeConfigProperties.getGapSizePoints())
+                                    .divide(new BigDecimal(2), RoundingMode.UP)
+                                    .setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.DOWN)
+                                    .divide(quoteAssetToScale, RoundingMode.UNNECESSARY)
+                    )
+            );
         }
     }
 

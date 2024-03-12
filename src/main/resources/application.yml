@@ -8,11 +8,13 @@ binance:
 
 trade:
     symbol: "PEPEFDUSD" # pepe coin obviously it's a pepe-trader for duck's sake
-    quote-asset: PEPE
-    quote-asset-scale: 0
-    base-asset: FDUSD
-    base-asset-scale: 8
-    base-asset-quantity-per-trade: 6.00
+    base-asset: PEPE
+    base-asset-scale: 0
+    quote-asset: FDUSD
+    quote-asset-scale: 8
+    quote-asset-quantity-per-trade: 25.00
+    max-std-divergence-points: 7
+    gap-size-points: 4
 
 
 logging.level:

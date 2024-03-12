@@ -26,7 +26,7 @@ public class OrderService {
 
     private JSONObject lastAction;
     public void createNewOrder(BigDecimal price, BigDecimal quantity, String action, long clientId) {
-        String value = price.setScale(8, RoundingMode.HALF_UP).toPlainString().strip();
+        String value = price.setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.HALF_UP).toPlainString().strip();
         webSocketApiClient.trade().newOrder(
                 tradeConfigProperties.getSymbol(),
                 action,

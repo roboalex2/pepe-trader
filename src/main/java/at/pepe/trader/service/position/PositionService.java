@@ -7,8 +7,6 @@ import at.pepe.trader.model.PositionStatus;
 import at.pepe.trader.persistent.PositionRepositoryImpl;
 import at.pepe.trader.service.binance.OrderService;
 import at.pepe.trader.service.candle.BarSeriesHolderService;
-import com.binance.connector.client.SpotClient;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,7 +38,7 @@ public class PositionService {
         this.positionRepository = positionRepository;
         this.orderService = orderService;
         this.barSeriesHolderService = barSeriesHolderService;
-        this.baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getBaseAssetScale());
+        this.baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getQuoteAssetScale());
     }
 
 
@@ -57,8 +55,8 @@ public class PositionService {
         if (!hasOpenOrderWaitingInProximity(price)) {
             orderService.createNewOrder(
                     price,
-                    tradeConfigProperties.getBaseAssetQuantityPerTrade().setScale(tradeConfigProperties.getBaseAssetScale(), RoundingMode.DOWN)
-                            .divide(price, RoundingMode.UP).setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.DOWN),
+                    tradeConfigProperties.getQuoteAssetQuantityPerTrade().setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.DOWN)
+                            .divide(price, RoundingMode.UP).setScale(tradeConfigProperties.getBaseAssetScale(), RoundingMode.DOWN),
                     "BUY",
                     new Random().nextLong()
             );
@@ -183,12 +181,12 @@ public class PositionService {
         if (positions.containsKey(id)) {
             return;
         }
-        BigDecimal baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getBaseAssetScale());
+        BigDecimal baseAssetToNoDeciConv = new BigDecimal(10).pow(tradeConfigProperties.getQuoteAssetScale());
 
         Position position = Position.builder()
                 .orderIdOpen(orderPojo.getOrderId())
                 .openAtPrice(orderPojo.getPrice())
-                .closeAtPrice(orderPojo.getPrice().add(new BigDecimal(4).setScale(tradeConfigProperties.getBaseAssetScale(), RoundingMode.HALF_UP).divide(baseAssetToNoDeciConv,  RoundingMode.HALF_UP)))
+                .closeAtPrice(orderPojo.getPrice().add(new BigDecimal(tradeConfigProperties.getGapSizePoints()).setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.HALF_UP).divide(baseAssetToNoDeciConv,  RoundingMode.HALF_UP)))
                 .quantityClose(orderPojo.getQuantity())
                 .quantityOpen(orderPojo.getQuantity())
                 .status(PositionStatus.WAITING_FOR_OPEN)

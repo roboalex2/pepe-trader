@@ -20,12 +20,12 @@ public class BalanceHolderService {
 
     private Map<String, BigDecimal> freeAssets  = new ConcurrentHashMap<>();
 
-    public BigDecimal getAvailableBaseAsset() {
-        BigDecimal baseAssetAmount = freeAssets.get(tradeConfigProperties.getBaseAsset());
-        if (baseAssetAmount == null) {
-            return new BigDecimal(tradeConfigProperties.getBaseAssetQuantityPerTrade().doubleValue() + 1); // TODO for now just assume
+    public BigDecimal getAvailableQuoteAsset() {
+        BigDecimal quoteAssetAmount = freeAssets.get(tradeConfigProperties.getQuoteAsset());
+        if (quoteAssetAmount == null) {
+            return new BigDecimal(tradeConfigProperties.getQuoteAssetQuantityPerTrade().doubleValue() + 1); // TODO for now just assume
         }
-        return baseAssetAmount;
+        return quoteAssetAmount;
     }
 
     public void updateAssets(JSONObject jsonObject) {
