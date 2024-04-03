@@ -20,6 +20,7 @@ public class TradeConfigProperties {
     private String quoteAsset;
     private int quoteAssetScale;
     private BigDecimal quoteAssetQuantityPerTrade;
-    private int maxStdDivergencePoints;
     private int gapSizePoints;
+    private BigDecimal upperBounds;
+    private BigDecimal lowerBounds;
 }

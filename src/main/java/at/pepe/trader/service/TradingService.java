@@ -36,15 +36,16 @@ public class TradingService {
     public void performTrade() {
         BarSeries minutes = barSeriesHolderService.getMinuteSeries();
         BigDecimal currentPrice = ((DecimalNum) minutes.getLastBar().getClosePrice()).getDelegate();
+        DecimalNum currentNumPrice = DecimalNum.valueOf(currentPrice);
 
         BigDecimal quoteAssetToScale = new BigDecimal(10).pow(tradeConfigProperties.getQuoteAssetScale());
-        BigDecimal deviation = (BigDecimal) stdDeviationIndicator(minutes).getValue(minutes.getEndIndex())
-                .multipliedBy(DecimalNum.valueOf(quoteAssetToScale))
-                .getDelegate();
 
-        if (!currentPrice.equals(lastActionPrice) && deviation.doubleValue() <= tradeConfigProperties.getMaxStdDivergencePoints() &&
-                upperIndicator(minutes).getValue(minutes.getEndIndex()).isGreaterThan(DecimalNum.valueOf(currentPrice)) &&
-                lowerIndicator(minutes).getValue(minutes.getEndIndex()).isLessThan(DecimalNum.valueOf(currentPrice)) &&
+        if (!currentPrice.equals(lastActionPrice) &&
+                DecimalNum.valueOf(tradeConfigProperties.getLowerBounds()).isLessThan(currentNumPrice) &&
+                DecimalNum.valueOf(tradeConfigProperties.getUpperBounds()).isGreaterThan(currentNumPrice) &&
+                middleIndicator20(minutes).getValue(minutes.getEndIndex()).isGreaterThan(currentNumPrice) &&
+                upperIndicator(minutes).getValue(minutes.getEndIndex()).isGreaterThan(currentNumPrice) &&
+                lowerIndicator(minutes).getValue(minutes.getEndIndex()).isLessThan(currentNumPrice) &&
                 balanceHolderService.getAvailableQuoteAsset().doubleValue() >= tradeConfigProperties.getQuoteAssetQuantityPerTrade().doubleValue()
         ) {
             lastActionPrice = currentPrice;
@@ -70,10 +71,10 @@ public class TradingService {
     }
 
     private BollingerBandsUpperIndicator upperIndicator(BarSeries series) {
-        return new BollingerBandsUpperIndicator(middleIndicator20(series), stdDeviationIndicator(series), DecimalNum.valueOf(1.5));
+        return new BollingerBandsUpperIndicator(middleIndicator20(series), stdDeviationIndicator(series), DecimalNum.valueOf(2));
     }
 
     private BollingerBandsLowerIndicator lowerIndicator(BarSeries series) {
-        return new BollingerBandsLowerIndicator(middleIndicator20(series), stdDeviationIndicator(series), DecimalNum.valueOf(1.5));
+        return new BollingerBandsLowerIndicator(middleIndicator20(series), stdDeviationIndicator(series), DecimalNum.valueOf(2));
     }
 }

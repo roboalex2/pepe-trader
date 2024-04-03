@@ -50,17 +50,21 @@ public class BarSeriesHolderService {
         if (!minuteSeries.getLastBar().getEndTime().isBefore(baseBar.getEndTime())) {
             minuteSeries.getLastBar().addPrice(baseBar.getClosePrice());
         } else {
-            BaseBar minuteKline = BaseBar.builder()
-                    .endTime(Instant.ofEpochSecond((baseBar.getEndTime().toEpochSecond() / 60) * 60 + 60).atZone(ZoneOffset.UTC))
-                    .volume(baseBar.getVolume())
-                    .closePrice(baseBar.getClosePrice())
-                    .openPrice(baseBar.getOpenPrice())
-                    .highPrice(baseBar.getHighPrice())
-                    .lowPrice(baseBar.getLowPrice())
-                    .timePeriod(minuteSeries.getLastBar().getTimePeriod())
-                    .build();
+            BaseBar minuteKline = buildMinuteKline(baseBar);
             minuteSeries.addBar(minuteKline);
         }
+    }
+
+    private BaseBar buildMinuteKline(BaseBar baseBar) {
+        return BaseBar.builder()
+                .endTime(Instant.ofEpochSecond((baseBar.getEndTime().toEpochSecond() / 60) * 60 + 60).atZone(ZoneOffset.UTC))
+                .volume(baseBar.getVolume())
+                .closePrice(baseBar.getClosePrice())
+                .openPrice(baseBar.getOpenPrice())
+                .highPrice(baseBar.getHighPrice())
+                .lowPrice(baseBar.getLowPrice())
+                .timePeriod(minuteSeries.getLastBar().getTimePeriod())
+                .build();
     }
 
     private void requestCandles() {

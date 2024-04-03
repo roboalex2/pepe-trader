@@ -13,8 +13,9 @@ trade:
     quote-asset: FDUSD
     quote-asset-scale: 8
     quote-asset-quantity-per-trade: 25.00
-    max-std-divergence-points: 7
     gap-size-points: 4
+    upper-bounds: 0.00000850
+    lower-bounds: 0.00000650
 
 
 logging.level:
