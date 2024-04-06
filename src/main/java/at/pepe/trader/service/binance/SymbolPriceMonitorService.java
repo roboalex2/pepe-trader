@@ -14,6 +14,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.ta4j.core.BaseBar;
 
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -44,8 +46,12 @@ public class SymbolPriceMonitorService {
     private void priceUpdateEvent(String message) {
         JSONObject jsonKline = new JSONObject(message).getJSONObject("k");
         BaseBar secondKline = candlestickMapper.map(jsonKline);
-        barSeriesHolderService.updateBarSeries(secondKline);
-        tradingService.performTrade();
+        try {
+            barSeriesHolderService.updateBarSeries(secondKline);
+            tradingService.performTrade();
+        } catch (RuntimeException exception) {
+            log.warn("Failure on priceUpdateEvent: ", exception);
+        }
     }
 
     private void websocketClosureEvent(int i, String message) {
@@ -54,7 +60,7 @@ public class SymbolPriceMonitorService {
     }
 
     private void websocketFailureEvent(Throwable throwable, Response response) {
-        log.warn(response.message(), throwable);
+        log.warn(Optional.ofNullable(response).map(Response::message).orElse("Websocket Failure for price update: ") , throwable);
         openWebsocketStream();
     }
 }

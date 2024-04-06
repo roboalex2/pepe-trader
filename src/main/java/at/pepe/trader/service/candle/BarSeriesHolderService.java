@@ -46,6 +46,10 @@ public class BarSeriesHolderService {
             return;
         }
 
+        if (secondSeries.getLastBar().getEndTime().toEpochSecond() >= baseBar.getEndTime().toEpochSecond()) {
+            return;
+        }
+
         secondSeries.addBar(baseBar);
         if (!minuteSeries.getLastBar().getEndTime().isBefore(baseBar.getEndTime())) {
             minuteSeries.getLastBar().addPrice(baseBar.getClosePrice());
