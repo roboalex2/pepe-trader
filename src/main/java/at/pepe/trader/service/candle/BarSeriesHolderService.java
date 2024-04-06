@@ -47,11 +47,12 @@ public class BarSeriesHolderService {
         }
 
         if (secondSeries.getLastBar().getEndTime().toEpochSecond() >= baseBar.getEndTime().toEpochSecond()) {
-            return;
+            secondSeries.getLastBar().addPrice(baseBar.getClosePrice());
+        } else {
+            secondSeries.addBar(baseBar);
         }
 
-        secondSeries.addBar(baseBar);
-        if (!minuteSeries.getLastBar().getEndTime().isBefore(baseBar.getEndTime())) {
+        if (minuteSeries.getLastBar().getEndTime().toEpochSecond() >= baseBar.getEndTime().toEpochSecond()) {
             minuteSeries.getLastBar().addPrice(baseBar.getClosePrice());
         } else {
             BaseBar minuteKline = buildMinuteKline(baseBar);
