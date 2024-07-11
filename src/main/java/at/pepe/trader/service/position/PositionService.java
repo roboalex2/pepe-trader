@@ -42,14 +42,14 @@ public class PositionService {
     }
 
 
-    public void openPosition(BigDecimal price) {
+    public boolean openPosition(BigDecimal price) {
         if (Optional.ofNullable(positions.values())
                 .orElse(List.of()).stream()
                 .anyMatch(pos ->
                         !Set.of(PositionStatus.FINISHED, PositionStatus.CANCELLED).contains(pos.getStatus()) &&
                                 pos.getOpenAtPrice().equals(price))
         ) {
-            return;
+            return false;
         }
 
         if (!hasOpenOrderWaitingInProximity(price)) {
@@ -60,7 +60,9 @@ public class PositionService {
                     "BUY",
                     new Random().nextLong()
             );
+            return true;
         }
+        return false;
     }
 
     private boolean hasOpenOrderWaitingInProximity(BigDecimal price) {
@@ -77,6 +79,7 @@ public class PositionService {
     private void cancelOldPositions() {
         BigDecimal currentPrice = (BigDecimal) barSeriesHolderService.getSecondSeries().getLastBar().getClosePrice().getDelegate();
 
+        // Cancel order when price rises by more than 2 points since creation of order.
         List<Position> list = positions.values().stream()
                 .filter(pos -> PositionStatus.WAITING_FOR_OPEN.equals(pos.getStatus()))
                 .filter(pos -> pos.getCreatedAt().isBefore(Instant.now().atOffset(ZoneOffset.UTC).minusMinutes(1)))
@@ -85,7 +88,7 @@ public class PositionService {
                                 .subtract(
                                         pos.getOpenAtPrice().multiply(baseAssetToNoDeciConv)
                                 ).doubleValue()
-                ) >= 3)
+                ) > (((double) tradeConfigProperties.getGapSizePoints() / 2d) + 1d))
                 .toList();
         list.forEach(pos ->
                 orderService.cancelOrder(pos.getOrderIdOpen())

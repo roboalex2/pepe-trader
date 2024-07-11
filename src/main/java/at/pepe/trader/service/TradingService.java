@@ -48,16 +48,17 @@ public class TradingService {
                 lowerIndicator(minutes).getValue(minutes.getEndIndex()).isLessThan(currentNumPrice) &&
                 balanceHolderService.getAvailableQuoteAsset().doubleValue() >= tradeConfigProperties.getQuoteAssetQuantityPerTrade().doubleValue()
         ) {
-            lastActionPrice = currentPrice;
 
-            positionService.openPosition(
+            if (positionService.openPosition(
                     currentPrice.subtract(
                             new BigDecimal(tradeConfigProperties.getGapSizePoints())
                                     .divide(new BigDecimal(2), RoundingMode.UP)
                                     .setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.DOWN)
                                     .divide(quoteAssetToScale, RoundingMode.UNNECESSARY)
                     )
-            );
+            )) {
+                lastActionPrice = currentPrice;
+            }
         }
     }
 
