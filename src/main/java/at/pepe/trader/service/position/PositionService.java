@@ -47,8 +47,8 @@ public class PositionService {
 
 
     public boolean openPosition(BigDecimal price) {
-        // We only open the position if we have less than 10 unfinished positions in a row.
-        // Meaning the counter resets as soon as one closes or if more than 1 hour has passed since opening the last of the 10
+        // We only open the position if we have less than MAX_POS_OVER_HOUR unfinished positions in a row.
+        // Meaning the counter reduces as soon as one closes or if more than 1 hour has passed since opening the last of the MAX_POS_OVER_HOUR it resets
         if (openedInCombo >= MAX_POS_OVER_HOUR) {
             return false;
         }
