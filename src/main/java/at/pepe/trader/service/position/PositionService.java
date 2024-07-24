@@ -32,6 +32,9 @@ public class PositionService {
 
     private BigDecimal baseAssetToNoDeciConv;
 
+    private int openedInCombo = 0;
+    private int openComboResetCounter = 0;
+
     @Autowired
     public PositionService(TradeConfigProperties tradeConfigProperties, PositionRepositoryImpl positionRepository, OrderService orderService, BarSeriesHolderService barSeriesHolderService) {
         this.tradeConfigProperties = tradeConfigProperties;
@@ -43,6 +46,12 @@ public class PositionService {
 
 
     public boolean openPosition(BigDecimal price) {
+        // We only open the position if we have less than 10 unfinished positions in a row.
+        // Meaning the counter resets as soon as one closes or if more than 1 hour has passed since opening the last of the 10
+        if (openedInCombo >= 10) {
+            return false;
+        }
+
         if (Optional.ofNullable(positions.values())
                 .orElse(List.of()).stream()
                 .anyMatch(pos ->
@@ -99,6 +108,18 @@ public class PositionService {
         }
     }
 
+    @Scheduled(cron = "0 * * * * *")
+    private void resetPositionInRowCounter() {
+        if (openComboResetCounter >= 60) {
+            openedInCombo = 0;
+            openComboResetCounter = 0;
+        } else if (openedInCombo >= 10) {
+            openComboResetCounter++;
+        } else {
+            openComboResetCounter = 0;
+        }
+    }
+
     public void onOrderUpdateEvent(OrderPojo order) {
         try {
             if ("NEW".equals(order.getOrderStatus()) && "BUY".equals(order.getAction())) {
@@ -134,6 +155,7 @@ public class PositionService {
         if (position != null && PositionStatus.WAITING_FOR_OPEN.equals(position.getStatus())) {
             position.setStatus(PositionStatus.OPENED);
             position.setOpenAtPrice(order.getPrice());
+            openedInCombo++;
             orderService.createNewOrder(position.getCloseAtPrice(), position.getQuantityClose(), "SELL", position.getId());
             positionRepository.save(position.getId(), position);
             if (order.getCommissionAmount().doubleValue() > 0) {
@@ -165,6 +187,7 @@ public class PositionService {
         if (position != null && PositionStatus.WAITING_FOR_CLOSE.equals(position.getStatus())) {
             position.setStatus(PositionStatus.FINISHED);
             position.setCloseAtPrice(order.getPrice());
+            openedInCombo = 0;
             positionRepository.save(position.getId(), position);
             log.info(position.toString());
             if (order.getCommissionAmount().doubleValue() > 0) {
