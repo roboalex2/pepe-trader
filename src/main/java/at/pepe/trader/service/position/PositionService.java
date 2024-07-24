@@ -34,6 +34,7 @@ public class PositionService {
 
     private int openedInCombo = 0;
     private int openComboResetCounter = 0;
+    private final int MAX_POS_OVER_HOUR = 6;
 
     @Autowired
     public PositionService(TradeConfigProperties tradeConfigProperties, PositionRepositoryImpl positionRepository, OrderService orderService, BarSeriesHolderService barSeriesHolderService) {
@@ -48,7 +49,7 @@ public class PositionService {
     public boolean openPosition(BigDecimal price) {
         // We only open the position if we have less than 10 unfinished positions in a row.
         // Meaning the counter resets as soon as one closes or if more than 1 hour has passed since opening the last of the 10
-        if (openedInCombo >= 10) {
+        if (openedInCombo >= MAX_POS_OVER_HOUR) {
             return false;
         }
 
@@ -113,7 +114,7 @@ public class PositionService {
         if (openComboResetCounter >= 60) {
             openedInCombo = 0;
             openComboResetCounter = 0;
-        } else if (openedInCombo >= 10) {
+        } else if (openedInCombo >= (MAX_POS_OVER_HOUR - 1)) {
             openComboResetCounter++;
         } else {
             openComboResetCounter = 0;
@@ -187,7 +188,9 @@ public class PositionService {
         if (position != null && PositionStatus.WAITING_FOR_CLOSE.equals(position.getStatus())) {
             position.setStatus(PositionStatus.FINISHED);
             position.setCloseAtPrice(order.getPrice());
-            openedInCombo = 0;
+            if (openedInCombo > 0) {
+                openedInCombo--;
+            }
             positionRepository.save(position.getId(), position);
             log.info(position.toString());
             if (order.getCommissionAmount().doubleValue() > 0) {
