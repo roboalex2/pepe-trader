@@ -34,7 +34,7 @@ public class PositionService {
 
     private int openedInCombo = 0;
     private int openComboResetCounter = 0;
-    private final int MAX_POS_OVER_HOUR = 7;
+    private final int MAX_POS_OVER_HOUR = 5;
 
     @Autowired
     public PositionService(TradeConfigProperties tradeConfigProperties, PositionRepositoryImpl positionRepository, OrderService orderService, BarSeriesHolderService barSeriesHolderService) {
