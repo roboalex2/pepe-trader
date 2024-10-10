@@ -23,4 +23,5 @@ public class TradeConfigProperties {
     private int gapSizePoints;
     private BigDecimal upperBounds;
     private BigDecimal lowerBounds;
+    private String discordWebhook;
 }
