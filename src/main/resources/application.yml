@@ -16,6 +16,7 @@ trade:
     gap-size-points: 4
     upper-bounds: 0.00000850
     lower-bounds: 0.00000650
+    discord-webhook: <redacted>
 
 
 logging.level:
