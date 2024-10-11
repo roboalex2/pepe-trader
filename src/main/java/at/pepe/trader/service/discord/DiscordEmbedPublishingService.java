@@ -21,23 +21,32 @@ public class DiscordEmbedPublishingService {
     private final TradeConfigProperties tradeConfigProperties;
 
     @Async
-    public void sendEmbed(String title, String description, String color) {
+    public void sendEmbed(String title, String description, String hexColor) {
 
         if (Strings.isBlank(tradeConfigProperties.getDiscordWebhook())) {
             return;
         }
 
         try {
-            // JSON-Payload erstellen
+            int color = Integer.parseInt(hexColor.replace("#", ""), 16);
+
+            // Create the embed object
             ObjectNode embed = objectMapper.createObjectNode();
+            embed.put("id", 652627557);  // Example ID, replace if necessary
             embed.put("title", title);
             embed.put("description", description);
             embed.put("color", color);
+            embed.putArray("fields");  // Empty array
 
+            // Create the main payload object
             ObjectNode payload = objectMapper.createObjectNode();
+            payload.put("content", "");  // Empty content
+            payload.put("tts", false);  // No text-to-speech
             payload.putArray("embeds").add(embed);
+            payload.putArray("components");  // Empty components array
+            payload.set("actions", objectMapper.createObjectNode());  // Empty actions object
 
-            // JSON-Payload in String umwandeln
+            // Convert the payload to a JSON string
             String jsonPayload = objectMapper.writeValueAsString(payload);
 
             // Anfrage senden
