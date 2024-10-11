@@ -52,7 +52,7 @@ public class TradingService {
             if (positionService.openPosition(
                     currentPrice.subtract(
                             new BigDecimal(tradeConfigProperties.getGapSizePoints())
-                                    .divide(new BigDecimal(2), RoundingMode.UP)
+                                    .divide(new BigDecimal(2), RoundingMode.DOWN)
                                     .setScale(tradeConfigProperties.getQuoteAssetScale(), RoundingMode.DOWN)
                                     .divide(quoteAssetToScale, RoundingMode.UNNECESSARY)
                     )
