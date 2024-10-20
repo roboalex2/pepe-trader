@@ -43,7 +43,7 @@ public class TradingService {
         if (!currentPrice.equals(lastActionPrice) &&
                 DecimalNum.valueOf(tradeConfigProperties.getLowerBounds()).isLessThan(currentNumPrice) &&
                 DecimalNum.valueOf(tradeConfigProperties.getUpperBounds()).isGreaterThan(currentNumPrice) &&
-                middleIndicator20(minutes).getValue(minutes.getEndIndex()).isGreaterThan(currentNumPrice) &&
+                //middleIndicator20(minutes).getValue(minutes.getEndIndex()).isGreaterThan(currentNumPrice) &&
                 upperIndicator(minutes).getValue(minutes.getEndIndex()).isGreaterThan(currentNumPrice) &&
                 lowerIndicator(minutes).getValue(minutes.getEndIndex()).isLessThan(currentNumPrice) &&
                 balanceHolderService.getAvailableQuoteAsset().doubleValue() >= tradeConfigProperties.getQuoteAssetQuantityPerTrade().doubleValue()
