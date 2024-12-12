@@ -33,6 +33,6 @@ public class StatisticResult {
                 "\nPositionsOpened: " + positionsOpened +
                 "\nAverageTimeToClose: " + averageTimeToClose +
                 "\nTotalProfit: **" + new DecimalFormat("#,##0.00").format(profitMade) + " $**" +
-                "\nVolumenTraded: " + volumenTraded + " $ ";
+                "\nVolumenTraded: " + String.format("%.2f", volumenTraded) + " $ ";
     }
 }

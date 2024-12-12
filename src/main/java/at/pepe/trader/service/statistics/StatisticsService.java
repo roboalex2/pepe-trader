@@ -91,12 +91,12 @@ public class StatisticsService {
                         .reduce(BigDecimal::add)
                         .orElse(new BigDecimal("-1"))
                 )
-                .averageTimeToClose(Duration.ofNanos((long) positions.stream()
+                .averageTimeToClose(Duration.ofSeconds((long) positions.stream()
                         .filter(el -> PositionStatus.FINISHED.equals(el.getStatus()))
                         .map(el -> el.getClosedAt() == null ? null : Duration.between(el.getCreatedAt(), el.getClosedAt()))
                         .filter(Objects::nonNull)
-                        .mapToLong(Duration::toNanos)
-                        .average().orElse(-1000000))
+                        .mapToLong(Duration::toSeconds)
+                        .average().orElse(-1))
                 ).build();
     }
 }
