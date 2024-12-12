@@ -194,9 +194,10 @@ public class PositionService {
         PositionStatus status = position.getStatus();
         if (Set.of(PositionStatus.WAITING_FOR_OPEN, PositionStatus.WAITING_FOR_CLOSE).contains(status)) {
             position.setStatus(PositionStatus.CANCELLED);
-            positionRepository.save(position.getId(), position);
+
             if (PositionStatus.WAITING_FOR_CLOSE.equals(status)) {
                 log.info(position.toString());
+                position.setClosedAt(order.getUpdatedAt());
                 BigDecimal currentPrice = (BigDecimal) barSeriesHolderService.getSecondSeries().getLastBar().getClosePrice().getDelegate();
                 discordEmbedPublishingService.sendEmbed(
                     "Cancelled Pos.: " + position.getId(),
@@ -204,6 +205,7 @@ public class PositionService {
                     "#800080"
                 );
             }
+            positionRepository.save(position.getId(), position);
             log.debug(position.toString());
         }
     }
