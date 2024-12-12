@@ -30,6 +30,7 @@ public class StatisticsService {
     @EventListener(ApplicationReadyEvent.class)
     @Scheduled(cron = "0 0 */6 * * *")
     private void generateAndPublishStatistics() {
+        log.info("Generating statistics...");
         List<StatisticResult> statisticResults = generateStatistics();
         statisticResults.forEach(el -> discordEmbedPublishingService.sendEmbed(
                 "Stats " + el.getTimeFrame(),
@@ -54,14 +55,12 @@ public class StatisticsService {
                 .takeWhile(el -> OffsetDateTime.now().minusHours(1).isBefore(el.getCreatedAt()))
                 .toList();
 
-        List<StatisticResult> statisticResults = List.of(
+        return List.of(
                 calculateStatistics(lastMonth).toBuilder().timeFrame("Last Month").build(),
                 calculateStatistics(lastWeek).toBuilder().timeFrame("Last Week").build(),
                 calculateStatistics(lastDay).toBuilder().timeFrame("Last Day").build(),
                 calculateStatistics(lastHour).toBuilder().timeFrame("Last Hour").build()
         );
-
-        return statisticResults;
     }
 
     private StatisticResult calculateStatistics(List<Position> positions) {
