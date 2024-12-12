@@ -79,9 +79,13 @@ public class PositionRepositoryImpl implements KeyValueRepository<Long, Position
         while (rocksIterator.isValid()) {
             try {
                 byte[] bytes = rocksIterator.value();
-                if(bytes == null) continue;
+                if(bytes == null) {
+                    rocksIterator.prev();
+                    continue;
+                }
                 Position result = objectMapper.readValue(bytes, Position.class);
                 if(result == null) {
+                    rocksIterator.prev();
                     continue;
                 }
 
@@ -91,9 +95,8 @@ public class PositionRepositoryImpl implements KeyValueRepository<Long, Position
                 }
             } catch (IOException e) {
                 log.error("Error retrieving the entry in RocksDB cause: {}, message: {}", e.getCause(), e.getMessage());
-            } finally {
-                rocksIterator.next();
             }
+            rocksIterator.prev();
         }
 
         return completed;

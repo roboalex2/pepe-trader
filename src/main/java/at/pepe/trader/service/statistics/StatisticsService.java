@@ -46,11 +46,9 @@ public class StatisticsService {
         List<Position> lastWeek = lastMonth.stream()
                 .takeWhile(el -> OffsetDateTime.now().minusDays(7).isBefore(el.getCreatedAt()))
                 .toList();
-
         List<Position> lastDay = lastWeek.stream()
                 .takeWhile(el -> OffsetDateTime.now().minusDays(1).isBefore(el.getCreatedAt()))
                 .toList();
-
         List<Position> lastHour = lastDay.stream()
                 .takeWhile(el -> OffsetDateTime.now().minusHours(1).isBefore(el.getCreatedAt()))
                 .toList();
@@ -95,7 +93,7 @@ public class StatisticsService {
                         .map(el -> el.getClosedAt() == null ? null : Duration.between(el.getCreatedAt(), el.getClosedAt()))
                         .filter(Objects::nonNull)
                         .mapToLong(Duration::toNanos)
-                        .average().orElse(-1))
+                        .average().orElse(-1000000))
                 ).build();
     }
 }
