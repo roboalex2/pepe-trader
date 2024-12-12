@@ -37,7 +37,7 @@ public class DiscordEmbedPublishingService {
             footer.put(
                     "text",
                     Instant.now().atZone(ZoneId.of("Europe/Vienna")).toOffsetDateTime()
-                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"))
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z"))
             );
 
             // Create the embed object

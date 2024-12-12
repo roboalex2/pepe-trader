@@ -29,7 +29,7 @@ public class StatisticsService {
 
     @EventListener(ApplicationReadyEvent.class)
     @Scheduled(cron = "0 0 */6 * * *")
-    private void generateAndPublishStatistics() {
+    public void generateAndPublishStatistics() {
         log.info("Generating statistics...");
         List<StatisticResult> statisticResults = generateStatistics();
         statisticResults.forEach(el -> discordEmbedPublishingService.sendEmbed(
