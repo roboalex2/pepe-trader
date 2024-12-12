@@ -212,6 +212,7 @@ public class PositionService {
         Position position = getPosition(order);
         if (position != null && PositionStatus.WAITING_FOR_CLOSE.equals(position.getStatus())) {
             position.setStatus(PositionStatus.FINISHED);
+            position.setClosedAt(order.getUpdatedAt());
             position.setCloseAtPrice(order.getPrice());
             if (openedInCombo > 0) {
                 openedInCombo--;

@@ -5,7 +5,6 @@ import lombok.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 
 @Data
 @ToString
@@ -27,4 +26,5 @@ public class Position implements Serializable {
     private BigDecimal quantityClose;
 
     private OffsetDateTime createdAt;
+    private OffsetDateTime closedAt;
 }

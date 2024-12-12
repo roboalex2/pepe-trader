@@ -2,8 +2,6 @@ package at.pepe.trader.persistent;
 
 import at.pepe.trader.model.Position;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.exc.StreamReadException;
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -11,16 +9,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.rocksdb.Options;
 import org.rocksdb.RocksDB;
 import org.rocksdb.RocksDBException;
+import org.rocksdb.RocksIterator;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.SerializationUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.HashSet;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 @Slf4j
 @Repository
@@ -70,6 +69,36 @@ public class PositionRepositoryImpl implements KeyValueRepository<Long, Position
             log.error("Error retrieving the entry in RocksDB from key: {}, cause: {}, message: {}", key, e.getCause(), e.getMessage());
         }
         return result;
+    }
+
+    public List<Position> findAllSince(OffsetDateTime offsetDateTime) {
+        RocksIterator rocksIterator = db.newIterator();
+        rocksIterator.seekToLast();
+        List<Position> completed = new ArrayList<>();
+
+        while (rocksIterator.isValid()) {
+            try {
+                byte[] bytes = rocksIterator.value();
+                if(bytes == null) continue;
+                Position result = objectMapper.readValue(bytes, Position.class);
+                if(result == null) {
+                    continue;
+                }
+
+                OffsetDateTime timestamp = getFirstTimestamp(result.getClosedAt(), result.getCreatedAt());
+                if (timestamp != null && timestamp.isAfter(offsetDateTime)) {
+                    completed.add(result);
+                }
+            } catch (IOException e) {
+                log.error("Error retrieving the entry in RocksDB cause: {}, message: {}", e.getCause(), e.getMessage());
+            }
+        }
+
+        return completed;
+    }
+
+    private OffsetDateTime getFirstTimestamp(OffsetDateTime first, OffsetDateTime second) {
+        return Optional.ofNullable(first).orElse(second);
     }
 
     @Override

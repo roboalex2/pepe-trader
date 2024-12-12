@@ -11,6 +11,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 @Slf4j
 @Service
@@ -30,6 +33,13 @@ public class DiscordEmbedPublishingService {
         try {
             int color = Integer.parseInt(hexColor.replace("#", ""), 16);
 
+            ObjectNode footer = objectMapper.createObjectNode();
+            footer.put(
+                    "text",
+                    Instant.now().atZone(ZoneId.of("Europe/Vienna")).toOffsetDateTime()
+                            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z"))
+            );
+
             // Create the embed object
             ObjectNode embed = objectMapper.createObjectNode();
             embed.put("id", 652627557);  // Example ID, replace if necessary
@@ -37,6 +47,7 @@ public class DiscordEmbedPublishingService {
             embed.put("description", description);
             embed.put("color", color);
             embed.putArray("fields");  // Empty array
+            embed.set("footer", footer);
 
             // Create the main payload object
             ObjectNode payload = objectMapper.createObjectNode();
@@ -51,12 +62,12 @@ public class DiscordEmbedPublishingService {
 
             // Anfrage senden
             RequestBody body = RequestBody.create(
-                jsonPayload, MediaType.get("application/json; charset=utf-8"));
+                    jsonPayload, MediaType.get("application/json; charset=utf-8"));
 
             Request request = new Request.Builder()
-                .url(tradeConfigProperties.getDiscordWebhook())
-                .post(body)
-                .build();
+                    .url(tradeConfigProperties.getDiscordWebhook())
+                    .post(body)
+                    .build();
 
             try (Response response = new OkHttpClient().newCall(request).execute()) {
                 if (!response.isSuccessful()) {
