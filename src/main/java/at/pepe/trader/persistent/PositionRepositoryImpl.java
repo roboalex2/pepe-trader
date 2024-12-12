@@ -91,6 +91,8 @@ public class PositionRepositoryImpl implements KeyValueRepository<Long, Position
                 }
             } catch (IOException e) {
                 log.error("Error retrieving the entry in RocksDB cause: {}, message: {}", e.getCause(), e.getMessage());
+            } finally {
+                rocksIterator.next();
             }
         }
 

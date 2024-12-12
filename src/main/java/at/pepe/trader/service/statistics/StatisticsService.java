@@ -30,13 +30,13 @@ public class StatisticsService {
     @EventListener(ApplicationReadyEvent.class)
     @Scheduled(cron = "0 0 */6 * * *")
     public void generateAndPublishStatistics() {
-        log.info("Generating statistics...");
         List<StatisticResult> statisticResults = generateStatistics();
         statisticResults.forEach(el -> discordEmbedPublishingService.sendEmbed(
                 "Stats " + el.getTimeFrame(),
                 el.toString(),
                 "#304ffe")
         );
+        log.info("Statistics sent.");
     }
 
     private List<StatisticResult> generateStatistics() {
